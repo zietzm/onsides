@@ -8,6 +8,13 @@ dependencies = [
     "pyahocorasick>=2.1.0",
 ]
 
+[project.scripts]
+download_files = "onsides_eu.download_files:main"
+parse_files = "onsides_eu.parse_files:main"
+map_tabular = "onsides_eu.tabular_data_mapping:main"
+parse_text = "onsides_eu.text_data_parse:main"
+format_text = "onsides_eu.text_data_format:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
