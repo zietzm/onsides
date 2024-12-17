@@ -6,6 +6,7 @@ import sys
 
 import pandas as pd
 
+# HACK: would be nice if we could just `import onsides.predict`
 sys.path.insert(
     0,
     pathlib.Path(__file__)

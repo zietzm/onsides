@@ -46,7 +46,6 @@ def compute_onsides(
 
     # Step 5: predict the ades from the free text data using the OnSIDES model
     logger.info("Predicting ADEs from free text data")
-    # TODO: THIS IS NOT DONE
     text_data_predict.predict_all(data_folder, model)
     logger.info("Finished predicting ADEs from free text data")
 

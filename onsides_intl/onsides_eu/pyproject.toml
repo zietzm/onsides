@@ -15,6 +15,7 @@ map_tabular = "onsides_eu.tabular_data_mapping:main"
 parse_text = "onsides_eu.text_data_parse:main"
 format_text = "onsides_eu.text_data_format:main"
 predict = "onsides_eu.text_data_predict:main"
+map_rxnorm = "onsides_eu.map_drugs_to_rxnorm:main"
 
 [build-system]
 requires = ["hatchling"]
