@@ -4,7 +4,6 @@ predict.py
 Apply a trained model to a set of examples.
 
 @author Nicholas P. Tatonetti, PhD
-
 """
 
 import argparse
@@ -30,11 +29,8 @@ def predict(
     examples_path: pathlib.Path,
     batch_size: int | None = None,
 ) -> None:
-    logger.info(f"Loading model from {model_filepath.name}")
-
     train_settings = TrainModelSettings.from_filename(model_filepath)
     print(train_settings)
-
     ex_settings = ExampleDataSettings.from_filename(examples_path)
 
     if ex_settings.nwords != train_settings.refnwords:
@@ -76,6 +72,11 @@ def predict(
         f"{train_settings.max_length}_{train_settings.batch_size}.csv.gz"
     )
     results_path = examples_path.parent / results_filename
+    if results_path.exists():
+        raise FileExistsError(
+            f"Results file already exists: {results_path}"
+            "To re-generate the results, delete the file and try again."
+        )
 
     print("Examples")
     print("-------------------")
@@ -95,13 +96,6 @@ def predict(
             f"{batch_size}"
         )
 
-    if results_path.exists():
-        logger.error(
-            "  > Results file already exists, will not repeat evaluation. "
-            "To re-generate the results, delete the file and try again."
-        )
-        sys.exit(1)
-
     if train_settings.network.startswith("CB"):
         network_path = models_path / "Bio_ClinicalBERT"
     elif train_settings.network.startswith("PMB"):
@@ -111,10 +105,11 @@ def predict(
     else:
         raise ValueError(f"ERROR: Unknown network: {train_settings.network}")
 
-    # initailize Dataset.tokenizer
+    # initialize Dataset.tokenizer
     cb.Dataset.set_tokenizer(network_path)
     model = cb.ClinicalBertClassifier(network_path)
-    state_dict = torch.load(model_filepath)
+    logger.info(f"Loading model from {model_filepath.name}")
+    state_dict = torch.load(model_filepath, weights_only=True)
     state_dict.pop("bert.embeddings.position_ids")  # Error if included
     model.load_state_dict(state_dict)
 
