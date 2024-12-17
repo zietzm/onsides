@@ -201,12 +201,8 @@ class ExampleDataSettings(BaseModel):
     @classmethod
     def from_filename(cls, examples_path: pathlib.Path) -> "ExampleDataSettings":
         splits = examples_path.stem.split("_")
-        if len(splits) != 8:
-            raise Exception(
-                "Example data filename not in format expected: {prefix}_{refset}_"
-                "{np_random_seed}_{split_method}_{EPOCHS}_{LR}_{max_length}_"
-                "{batch_size}.pth"
-            )
+        if len(splits) < 8:
+            raise ValueError("Expected 8 splits, got {len(splits)}")
 
         refset = int(splits[1].removeprefix("method"))
         nwords = int(splits[2].removeprefix("nwords"))
