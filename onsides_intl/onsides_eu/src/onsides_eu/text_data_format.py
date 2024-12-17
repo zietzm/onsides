@@ -94,7 +94,10 @@ def format_text(
             exact_terms.append(row)
 
     logger.info(f"Found {len(exact_terms)} exact matches.")
-    pl.DataFrame(exact_terms).write_csv(data_folder / "bert_input_v2.csv")
+    pl.DataFrame(exact_terms).write_csv(
+        data_folder
+        / "sentences-rx_method14_nwords125_clinical_bert_application_set_AR_v0924.csv"
+    )
 
 
 def main():

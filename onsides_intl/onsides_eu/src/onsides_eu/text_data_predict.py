@@ -2,6 +2,8 @@ import argparse
 import logging
 import os
 import pathlib
+import shlex
+import subprocess
 
 import pandas as pd
 
@@ -13,47 +15,52 @@ def predict_all(
     model_path: pathlib.Path,
 ) -> None:
     logger.info("Running the OnSIDES model")
-
-    exact_terms_path = data_folder / "bert_input.csv"
-    ar_model = (
-        model_path
-        / data_folder
-        / "bestepoch-bydrug-PMB_14-AR-125-all_222_24_25_2.5e-05_256_32.pth"
+    exact_terms_path = (
+        data_folder
+        / "sentences-rx_method14_nwords125_clinical_bert_application_set_AR_v0924.csv"
     )
+    ar_model = (
+        model_path / "bestepoch-bydrug-PMB_14-AR-125-all_222_24_25_2.5e-05_256_32.pth"
+    )
+    assert ar_model.exists()
 
-    # get absolute path - we want the onsides folder to find and call the predict.py script
-    onsides_intl_dir = os.path.abspath(os.getcwd())
-    onsides_dir = onsides_intl_dir.replace("onsides_intl/", "")
+    # get absolute path - we want the onsides folder to find and call predict.py
+    onsides_intl_dir = pathlib.Path(os.getcwd())
+    assert onsides_intl_dir.stem == "onsides_intl"
+    onsides_dir = onsides_intl_dir.parent
+    script_path = onsides_dir / "src" / "predict.py"
+    assert script_path.exists()
 
     # call the prediction model
-    os.system(
-        f"python3 {onsides_dir}src/predict.py --model {ar_model} --examples {exact_terms_path}"
+    command = (
+        f"python3 {script_path} --model {ar_model.absolute()} "
+        f"--examples {exact_terms_path.absolute()}"
     )
+    subprocess.run(shlex.split(command), check=True, cwd=onsides_dir)
 
     # build files using predicted labels
-    # TODO : customize the create_onsides_datafiles script for the EU data
-    results = (
-        data_folder
-        / "bestepoch-bydrug-PMB-sentences-rx_ref14-AR-125-all_222_24_25_2.5e-05_256_32.csv.gz"
+    result_path = data_folder / (
+        "bestepoch-bydrug-PMB-sentences-rx_ref14-AR-125-all_222_24_25_2.5e-"
+        "05_256_32.csv.gz"
     )
+    assert result_path.exists()
 
-    # right now, we have it set up to simply run through the results and just filter against the threshold used in the original OnSIDES output.
-    res = results
-    ex = exact_terms_path
+    # right now, we have it set up to simply run through the results and just
+    # filter against the threshold used in the original OnSIDES output.
     threshold = 0.4633
-    res = pd.read_csv(res, header=None, names=["Pred0", "Pred1"])
-    ex = pd.read_csv(ex)
-    df = pd.concat([ex, res], axis=1)
-    print(df.shape[0])
+    result_df = pd.read_csv(result_path, header=None, names=["Pred0", "Pred1"])
+    exact_df = pd.read_csv(exact_terms_path)
+    df = pd.concat([exact_df, result_df], axis=1)
+    n_before = df.shape[0]
     df = df[df.Pred0 > threshold]
-    print(df.shape[0])
-    df.to_csv(data_folder / "data/ade_text_table_onsides_pred.csv", index=False)
+    n_after = df.shape[0]
+    logger.info(f"Filtered from {n_before} to {n_after} rows.")
+    df.to_csv(data_folder / "data" / "ade_text_table_onsides_pred.csv", index=False)
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="let the code know where the data is held"
-    )
+    logging.basicConfig(level=logging.INFO)
+    parser = argparse.ArgumentParser()
     parser.add_argument(
         "--data_folder",
         type=pathlib.Path,
