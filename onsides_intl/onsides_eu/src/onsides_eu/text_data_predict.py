@@ -38,19 +38,12 @@ def predict_all(
     script_path = onsides_dir / "src" / "predict.py"
     assert script_path.exists()
 
-    # call the prediction model
     predict.predict(
         model_filepath=ar_model,
         models_path=model_path,
         examples_path=exact_terms_path,
         batch_size=None,
     )
-    # command = (
-    #     f"python3 {script_path} --model {ar_model.absolute()} "
-    #     f"--examples {exact_terms_path.absolute()} "
-    #     f"--models_path {model_path.absolute()}"
-    # )
-    # subprocess.run(shlex.split(command), check=True, cwd=model_path.parent)
 
     # build files using predicted labels
     result_path = data_folder / (
