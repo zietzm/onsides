@@ -2,13 +2,16 @@ import argparse
 import logging
 import os
 import pathlib
-import shlex
-import subprocess
 import sys
 
 import pandas as pd
 
-sys.path.insert(0, "/Users/zietzm/projects/onsides/src")
+sys.path.insert(
+    0,
+    pathlib.Path(__file__)
+    .parent.parent.parent.parent.parent.joinpath("src")
+    .as_posix(),
+)
 import predict
 
 logger = logging.getLogger(__name__)
