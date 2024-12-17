@@ -9,6 +9,7 @@ Apply a trained model to a set of examples.
 
 import argparse
 import os
+import pathlib
 import sys
 
 import numpy as np
@@ -22,6 +23,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--model", help="path to the model (pth) file", type=str, required=True
+    )
+    parser.add_argument(
+        "--models_path",
+        type=pathlib.Path,
+        required=True,
+        help="path to the model to use",
     )
     parser.add_argument(
         "--examples",
@@ -129,14 +136,17 @@ if __name__ == "__main__":
 
     if os.path.exists(results_path):
         print(
-            f"  > Results file already exists, will not repeat evaluation. If you want to re-generate the results, delete the file and try again."
+            "  > Results file already exists, will not repeat evaluation. "
+            "If you want to re-generate the results, delete the file and try again."
         )
         sys.exit(1)
 
     if network.startswith("CB"):
-        network_path = "./models/Bio_ClinicalBERT/"
+        network_path = args.models_path / "Bio_ClinicalBERT/"
     elif network.startswith("PMB"):
-        network_path = "./models/microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract/"
+        network_path = (
+            args.models_path / "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract/"
+        )
     else:
         raise Exception(f"ERROR: Unknown network: {network}")
 
@@ -151,7 +161,7 @@ if __name__ == "__main__":
     # loading the example data
     df = pd.read_csv(args.examples)
 
-    print(f"Evaluating example data...")
+    print("Evaluating example data...")
     outputs = cb.evaluate(model, df, max_length, batch_size, examples_only=True)
     npoutputs = [x.cpu().detach().numpy() for x in outputs]
     predictions = np.vstack(npoutputs)
