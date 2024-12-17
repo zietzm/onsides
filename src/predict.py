@@ -28,7 +28,7 @@ def predict(
     model_filepath: pathlib.Path,
     models_path: pathlib.Path,
     examples_path: pathlib.Path,
-    batch_size: int | None,
+    batch_size: int | None = None,
 ) -> None:
     logger.info(f"Loading model from {model_filepath.name}")
 

@@ -4,8 +4,12 @@ import os
 import pathlib
 import shlex
 import subprocess
+import sys
 
 import pandas as pd
+
+sys.path.insert(0, "/Users/zietzm/projects/onsides/src")
+import predict
 
 logger = logging.getLogger(__name__)
 
@@ -32,12 +36,18 @@ def predict_all(
     assert script_path.exists()
 
     # call the prediction model
-    command = (
-        f"python3 {script_path} --model {ar_model.absolute()} "
-        f"--examples {exact_terms_path.absolute()} "
-        f"--models_path {model_path.absolute()}"
+    predict.predict(
+        model_filepath=ar_model,
+        models_path=model_path,
+        examples_path=exact_terms_path,
+        batch_size=None,
     )
-    subprocess.run(shlex.split(command), check=True, cwd=model_path.parent)
+    # command = (
+    #     f"python3 {script_path} --model {ar_model.absolute()} "
+    #     f"--examples {exact_terms_path.absolute()} "
+    #     f"--models_path {model_path.absolute()}"
+    # )
+    # subprocess.run(shlex.split(command), check=True, cwd=model_path.parent)
 
     # build files using predicted labels
     result_path = data_folder / (
