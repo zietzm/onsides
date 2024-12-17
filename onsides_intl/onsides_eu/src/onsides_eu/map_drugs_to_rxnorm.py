@@ -1,12 +1,12 @@
 import argparse
+import logging
 import pathlib
-import warnings
 
 import pandas as pd
 import requests
 from tqdm import tqdm
 
-warnings.filterwarnings("ignore")
+logger = logging.getLogger(__name__)
 
 
 def map_all(data_folder: pathlib.Path, external_data_folder: pathlib.Path) -> None:
@@ -142,7 +142,7 @@ def map_all(data_folder: pathlib.Path, external_data_folder: pathlib.Path) -> No
     df.to_csv(data_folder / "ingredients.csv", index=False)
 
 
-if __name__ == "__main__":
+def main():
     print("run the model")
     parser = argparse.ArgumentParser(
         description="let the code know where the data is held"
@@ -162,3 +162,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     map_all(args.data_folder, args.external_data)
+
+
+if __name__ == "__main__":
+    main()
