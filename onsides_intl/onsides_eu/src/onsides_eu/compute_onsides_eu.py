@@ -45,34 +45,21 @@ def compute_onsides(
     logger.info("Finished extracting ADEs from free text data")
 
     # Step 5: predict the ades from the free text data using the OnSIDES model
-    # TODO: THIS... Do we really want to predict on exact matches??
-    print(
-        "we extracted the ades from the free text! "
-        "now, let's predict the ades from the free text."
-    )
-    print("running text_data_predict.py")
+    logger.info("Predicting ADEs from free text data")
+    # TODO: THIS IS NOT DONE
     text_data_predict.predict_all(data_folder, model)
-    print("finished text_data_predict.py")
+    logger.info("Finished predicting ADEs from free text data")
 
     # Step 6: map all of the drugs to standard rxnorm
-    print(
-        "we predicted the ades from the free text! "
-        "now, let's map all of the drugs to standard rxnorm."
-    )
-    print("running map_drugs_to_rxnorm.py")
+    # TODO: THIS IS NOT DONE
+    logger.info("Mapping drugs to RxNorm")
     map_drugs_to_rxnorm.map_all(data_folder, external_data_folder)
-    print("finished map_drugs_to_rxnorm.py")
-
-    print("##############################################")
-    print("finished all steps!")
-    print("##############################################")
-    print("now, let's build the OnSIDES EU data. run build_onsides_eu.py")
+    logger.info("Finished mapping drugs to RxNorm")
+    logger.info("Finished all steps!")
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="let the code know where the data is held"
-    )
+def main():
+    parser = argparse.ArgumentParser()
     parser.add_argument(
         "--data_folder",
         type=pathlib.Path,
@@ -91,9 +78,9 @@ if __name__ == "__main__":
         required=True,
         help="Path to the where the model is housed.",
     )
-
     args = parser.parse_args()
-    data_folder = args.data_folder
-    external_data_folder = args.external_data
-    model = args.model
-    compute_onsides(data_folder, external_data_folder, model)
+    compute_onsides(args.data_folder, args.external_data, args.model)
+
+
+if __name__ == "__main__":
+    main()
