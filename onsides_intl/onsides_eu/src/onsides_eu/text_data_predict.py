@@ -56,7 +56,7 @@ def predict_all(
     df = df[df.Pred0 > threshold]
     n_after = df.shape[0]
     logger.info(f"Filtered from {n_before} to {n_after} rows.")
-    df.to_csv(data_folder / "data" / "ade_text_table_onsides_pred.csv", index=False)
+    df.to_csv(data_folder / "ade_text_table_onsides_pred.csv", index=False)
 
 
 def main():
