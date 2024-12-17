@@ -35,13 +35,9 @@ def parse_all_files(data_folder: pathlib.Path) -> None:
 
 def pull_text_from_pdf(input_file: pathlib.Path, output_folder: pathlib.Path) -> None:
     if not input_file.name.endswith("_label.pdf"):
-        raise ValueError(
-            f"Input path {input_file.as_posix()} doesn't have the expected ending."
-        )
+        raise ValueError(f"Input path {input_file} doesn't have the expected ending.")
     if not output_folder.exists():
-        raise NotADirectoryError(
-            f"Output folder {output_folder.as_posix()} is not a directory"
-        )
+        raise NotADirectoryError(f"Output folder {output_folder} is not a directory")
     drug_name = input_file.stem.removesuffix("_label")
     output_file = output_folder.joinpath(drug_name).with_suffix(".txt")
 
@@ -53,9 +49,7 @@ def pull_text_from_pdf(input_file: pathlib.Path, output_folder: pathlib.Path) ->
 
 
 def _pull_text_pdftotext(input_file: pathlib.Path, output_file: pathlib.Path) -> None:
-    command = (
-        f"pdftotext -nopgbrk -raw {input_file.as_posix()} {output_file.as_posix()}"
-    )
+    command = f"pdftotext -nopgbrk -raw {input_file} {output_file}"
     subprocess.run(shlex.split(command), check=True)
 
 
@@ -75,18 +69,14 @@ def _pull_text_python(input_file: pathlib.Path, output_file: pathlib.Path) -> No
 
 def pull_tables_from_pdf(input_file: pathlib.Path, output_folder: pathlib.Path) -> None:
     if not input_file.name.endswith("_label.pdf"):
-        raise ValueError(
-            f"Input path {input_file.as_posix()} doesn't have the expected ending."
-        )
+        raise ValueError(f"Input path {input_file} doesn't have the expected ending.")
     if not output_folder.exists():
-        raise NotADirectoryError(
-            f"Output folder {output_folder.as_posix()} is not a directory"
-        )
+        raise NotADirectoryError(f"Output folder {output_folder} is not a directory")
 
     try:
         tables = tabula.read_pdf(input_file, pages="all", silent=True)  # type: ignore
     except Exception as e:
-        logger.error(f"Failed to read {input_file.as_posix()}. {e}")
+        logger.error(f"Failed to read {input_file}. {e}")
         return
 
     drug_name = input_file.stem.removesuffix("_label")
