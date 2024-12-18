@@ -3,6 +3,7 @@ import logging
 import pathlib
 
 import pandas as pd
+import polars as pl
 import requests
 from tqdm import tqdm
 
@@ -17,27 +18,26 @@ def map_all(data_folder: pathlib.Path, external_data_folder: pathlib.Path) -> No
             data_folder.joinpath("medicines-output-medicines-report_en.xlsx"),
             skiprows=8,
         )
-        .query("Category == 'Human'")
+        .pipe(pl.DataFrame)
+        .filter(pl.col("Category") == "Human")
         .rename(
-            columns={
+            {
                 "Name of medicine": "Medicine name",
                 "EMA product number": "Product number",
                 "Medicine status": "Authorisation status",
                 "ATC code (human)": "ATC code",
             }
         )
-        .loc[
-            :,
-            [
-                "Medicine name",
-                "Product number",
-                "Active substance",
-                "Authorisation status",
-                "International non-proprietary name (INN) / common name",
-                "ATC code",
-            ],
-        ]
+        .select(
+            "Medicine name",
+            "Product number",
+            "Active substance",
+            "Authorisation status",
+            "International non-proprietary name (INN) / common name",
+            "ATC code",
+        )
     )
+    print(df.dtypes)
     assert isinstance(df, pd.DataFrame)
     print(df.shape)
 
