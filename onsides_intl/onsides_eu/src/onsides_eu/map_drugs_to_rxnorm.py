@@ -13,7 +13,7 @@ def map_all(data_folder: pathlib.Path, external_data_folder: pathlib.Path) -> No
     # the original drug table
     # read in table of drug info (and filter for relevant columns)
     df = pd.read_excel(
-        data_folder / "Medicines_output_european_public_assessment_reports.xlsx",
+        data_folder / "medicines-output-medicines-report_en.xlsx",
         skiprows=8,
     )
     df = df[df.Category == "Human"][
@@ -88,9 +88,7 @@ def map_all(data_folder: pathlib.Path, external_data_folder: pathlib.Path) -> No
     print(f"mapped {str(df[df.num_ingredients > 0].shape[0])} drugs")
 
     # next map with OHDSI RxNorm
-    rxnorm = pd.read_csv(
-        external_data_folder / "athena_rxnorm_atc/CONCEPT.csv", delimiter="\t"
-    )
+    rxnorm = pd.read_csv(external_data_folder / "CONCEPT.csv", delimiter="\t")
     rxnorm = rxnorm[
         (rxnorm.domain_id == "Drug")
         & (rxnorm.vocabulary_id.isin(["RxNorm", "RxNorm Extension"]))
@@ -117,9 +115,7 @@ def map_all(data_folder: pathlib.Path, external_data_folder: pathlib.Path) -> No
     print(f"mapped {str(df[df.num_ingredients > 0].shape[0])} drugs")
 
     # next map with OHDSI RxNorm using Brand Names
-    rxnorm = pd.read_csv(
-        external_data_folder / "athena_rxnorm_atc/CONCEPT.csv", delimiter="\t"
-    )
+    rxnorm = pd.read_csv(external_data_folder / "CONCEPT.csv", delimiter="\t")
     rxnorm = rxnorm[
         (rxnorm.domain_id == "Drug")
         & (rxnorm.vocabulary_id.isin(["RxNorm", "RxNorm Extension"]))
