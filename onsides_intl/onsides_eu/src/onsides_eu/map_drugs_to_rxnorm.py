@@ -2,6 +2,7 @@ import argparse
 import logging
 import pathlib
 
+import numpy as np
 import pandas as pd
 import polars as pl
 import requests
@@ -51,7 +52,7 @@ def map_all(data_folder: pathlib.Path, external_data_folder: pathlib.Path) -> No
         "International non-proprietary name (INN) / common name"
     ].apply(
         lambda x: list(set([rxnorm_dict[i] for i in x.split(", ") if i in rxnorm_dict]))
-        if str(x) != "nan"
+        if np.isnan(x) or x is None
         else None
     )
     # next map on substance name if INN name doesn't work
@@ -145,13 +146,10 @@ def map_all(data_folder: pathlib.Path, external_data_folder: pathlib.Path) -> No
         lambda x: len(x) if x is not None else 0
     )
     print(f"mapped {str(df[df.num_ingredients > 0].shape[0])} drugs")
-
-    # save ingredient dataframe.
     df.to_csv(data_folder / "ingredients.csv", index=False)
 
 
 def main():
-    print("run the model")
     parser = argparse.ArgumentParser(
         description="let the code know where the data is held"
     )
