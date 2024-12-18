@@ -39,8 +39,8 @@ def map_all(data_folder: pathlib.Path, external_data_folder: pathlib.Path) -> No
         )
     )
     print(df.dtypes)
-    assert isinstance(df, pd.DataFrame)
     print(df.shape)
+    df = df.to_pandas()
 
     # read in UMLS rxnorm
     rxnorm = pd.read_csv(external_data_folder / "umls_rxnorm.csv")
