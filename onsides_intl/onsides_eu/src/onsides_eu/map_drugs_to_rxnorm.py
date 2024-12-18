@@ -12,20 +12,32 @@ logger = logging.getLogger(__name__)
 def map_all(data_folder: pathlib.Path, external_data_folder: pathlib.Path) -> None:
     # the original drug table
     # read in table of drug info (and filter for relevant columns)
-    df = pd.read_excel(
-        data_folder / "medicines-output-medicines-report_en.xlsx",
-        skiprows=8,
-    )
-    df = df[df.Category == "Human"][
-        [
-            "Medicine name",
-            "Product number",
-            "Active substance",
-            "Authorisation status",
-            "International non-proprietary name (INN) / common name",
-            "ATC code",
+    df = (
+        pd.read_excel(
+            data_folder.joinpath("medicines-output-medicines-report_en.xlsx"),
+            skiprows=8,
+        )
+        .query("Category == 'Human'")
+        .rename(
+            columns={
+                "Name of medicine": "Medicine name",
+                "EMA product number": "Product number",
+                "Medicine status": "Authorisation status",
+                "ATC code (human)": "ATC code",
+            }
+        )
+        .loc[
+            :,
+            [
+                "Medicine name",
+                "Product number",
+                "Active substance",
+                "Authorisation status",
+                "International non-proprietary name (INN) / common name",
+                "ATC code",
+            ],
         ]
-    ]
+    )
     assert isinstance(df, pd.DataFrame)
     print(df.shape)
 
