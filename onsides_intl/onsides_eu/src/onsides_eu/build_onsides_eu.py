@@ -169,7 +169,7 @@ def build(
     ades.to_csv(final_folder / "adverse_events.csv", index=False)
 
 
-if __name__ == "__main__":
+def main():
     print("run the model")
     parser = argparse.ArgumentParser(
         description="let the code know where the data is held"
@@ -198,3 +198,7 @@ if __name__ == "__main__":
     external_data_folder = args.external_data
     final_folder = args.final_data
     build(data_folder, external_data_folder, final_folder)
+
+
+if __name__ == "__main__":
+    main()
