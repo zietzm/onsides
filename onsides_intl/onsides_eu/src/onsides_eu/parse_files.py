@@ -33,7 +33,9 @@ def parse_all_files(data_folder: pathlib.Path, n_threads: int | None = None) -> 
         futures = list()
         for pdf in pdfs:
             futures.append(executor.submit(pull_text_from_pdf, pdf, raw_txt_folder))
-        for future in tqdm.tqdm(concurrent.futures.as_completed(futures)):
+        for future in tqdm.tqdm(
+            concurrent.futures.as_completed(futures), total=len(pdfs)
+        ):
             future.result()
 
     for pdf in tqdm.tqdm(pdfs):
