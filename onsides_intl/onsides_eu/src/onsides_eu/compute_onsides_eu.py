@@ -16,7 +16,10 @@ logger = logging.getLogger(__name__)
 
 
 def compute_onsides(
-    data_folder: pathlib.Path, external_data_folder: pathlib.Path, model: pathlib.Path
+    data_folder: pathlib.Path,
+    external_data_folder: pathlib.Path,
+    model: pathlib.Path,
+    n_threads: int | None = None,
 ) -> None:
     # Step 0: check if the drug data has been downloaded. If not, return an error
     drug_data_table = data_folder.joinpath("medicines-output-medicines-report_en.xlsx")
@@ -26,7 +29,7 @@ def compute_onsides(
 
     # Step 1: parse the drug data
     logger.info("Parsing text and tables from drug label PDFs")
-    parse_files.parse_all_files(data_folder)
+    parse_files.parse_all_files(data_folder, n_threads=n_threads)
     logger.info("Finished parsing text and tables from PDFs")
 
     # Step 2: extract ades from tabular drug data
@@ -50,7 +53,6 @@ def compute_onsides(
     logger.info("Finished predicting ADEs from free text data")
 
     # Step 6: map all of the drugs to standard rxnorm
-    # TODO: THIS IS NOT DONE
     logger.info("Mapping drugs to RxNorm")
     map_drugs_to_rxnorm.map_all(data_folder, external_data_folder)
     logger.info("Finished mapping drugs to RxNorm")
@@ -77,8 +79,14 @@ def main():
         required=True,
         help="Path to the where the model is housed.",
     )
+    parser.add_argument(
+        "--n_threads",
+        type=int,
+        default=None,
+        help="Number of threads to use for parallel processing.",
+    )
     args = parser.parse_args()
-    compute_onsides(args.data_folder, args.external_data, args.model)
+    compute_onsides(args.data_folder, args.external_data, args.model, args.n_threads)
 
 
 if __name__ == "__main__":

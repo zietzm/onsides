@@ -1,4 +1,5 @@
 import argparse
+import concurrent.futures
 import logging
 import pathlib
 import shlex
@@ -13,7 +14,7 @@ import tqdm.auto as tqdm
 logger = logging.getLogger(__name__)
 
 
-def parse_all_files(data_folder: pathlib.Path) -> None:
+def parse_all_files(data_folder: pathlib.Path, n_threads: int | None = None) -> None:
     pdfs = list(data_folder.joinpath("raw").glob("*_label.pdf"))
     print(f"We have downloaded {len(pdfs)} PDF drug label files.")
 
@@ -28,9 +29,13 @@ def parse_all_files(data_folder: pathlib.Path) -> None:
     raw_tbl_folder = data_folder.joinpath("raw_tbl")
     raw_tbl_folder.mkdir(exist_ok=True)
 
-    for pdf in tqdm.tqdm(pdfs):
-        pull_text_from_pdf(pdf, raw_txt_folder)
-        pull_tables_from_pdf(pdf, raw_tbl_folder)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=n_threads) as executor:
+        futures = list()
+        for pdf in pdfs:
+            futures.append(executor.submit(pull_text_from_pdf, pdf, raw_txt_folder))
+            futures.append(executor.submit(pull_tables_from_pdf, pdf, raw_tbl_folder))
+        for future in tqdm.tqdm(concurrent.futures.as_completed(futures)):
+            future.result()
 
 
 def pull_text_from_pdf(input_file: pathlib.Path, output_folder: pathlib.Path) -> None:
