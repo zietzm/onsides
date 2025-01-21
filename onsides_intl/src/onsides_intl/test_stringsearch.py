@@ -4,7 +4,6 @@ from onsides_intl.stringsearch import (
     ContextSettings,
     IndexedText,
     MatchContext,
-    SearchTerm,
     _build_bert_string,
     _build_search_tree,
     _find_terms_in_text,
@@ -16,10 +15,10 @@ from onsides_intl.stringsearch import (
 @pytest.fixture
 def search_terms():
     return [
-        SearchTerm(term="foo", term_id=1),
-        SearchTerm(term="bar", term_id=2),
-        SearchTerm(term="baz", term_id=3),
-        SearchTerm(term="zab", term_id=4),
+        IndexedText(text="foo", text_id=1),
+        IndexedText(text="bar", text_id=2),
+        IndexedText(text="baz", text_id=3),
+        IndexedText(text="zab", text_id=4),
     ]
 
 
@@ -155,6 +154,7 @@ def test_parse_texts(
     results = parse_texts(texts, search_terms, settings, progress=False)
     expected = [
         MatchContext(
+            match_id=0,
             text_id=1,
             term_id=1,
             term="foo",
@@ -162,6 +162,7 @@ def test_parse_texts(
         ),
         # Handle match inside a word (at the start)
         MatchContext(
+            match_id=1,
             text_id=2,
             term_id=1,
             term="foo",
@@ -169,6 +170,7 @@ def test_parse_texts(
         ),
         # Handle match inside a word (in the middle)
         MatchContext(
+            match_id=2,
             text_id=2,
             term_id=2,
             term="bar",
@@ -176,6 +178,7 @@ def test_parse_texts(
         ),
         # Handle match inside a word (at the end)
         MatchContext(
+            match_id=3,
             text_id=2,
             term_id=3,
             term="baz",
