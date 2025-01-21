@@ -39,13 +39,15 @@ def evaluate(
 ) -> list[float]:
     model.eval()
     if torch.cuda.is_available():
-        if device_id is None:
-            device = torch.device("cuda")
-        else:
-            device = torch.device(f"cuda:{device_id}")
-        model = model.cuda()
+        name = "cuda" if device_id is None else f"cuda:{device_id}"
+        device = torch.device(name)
+        model = model.cuda(device)
     else:
-        device = torch.device("cpu")
+        name = "cpu"
+        device = torch.device(name)
+        model = model.cpu()
+
+    logger.info(f"Using device {name}")
 
     dataset = Dataset(texts, tokenizer_path, max_length=max_length)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size)
