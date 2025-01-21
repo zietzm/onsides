@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 def predict_all(
     data_folder: pathlib.Path,
     model_path: pathlib.Path,
+    batch_size: int | None = None,
     device_id: int | None = None,
 ) -> None:
     logger.info("Loading exact matches...")
@@ -41,7 +42,7 @@ def predict_all(
         network_path=network_path,
         weights_path=ar_model,
         text_settings=text_settings,
-        batch_size=None,
+        batch_size=batch_size,
         device_id=device_id,
     )
     predictions_df = pd.DataFrame(predictions, columns=pd.Index(["Pred0", "Pred1"]))
@@ -60,7 +61,14 @@ def predict_all(
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(
+        level=logging.INFO,
+        format=(
+            "%(asctime)s.%(msecs)03d %(levelname)s %(module)s -"
+            " %(funcName)s: %(message)s"
+        ),
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--data_folder",
@@ -75,6 +83,12 @@ def main():
         help="Path to the where the model is housed.",
     )
     parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=None,
+        help="The batch size to use. If None, will use the default.",
+    )
+    parser.add_argument(
         "--device_id",
         type=int,
         default=None,
@@ -83,7 +97,7 @@ def main():
     args = parser.parse_args()
     data_folder = args.data_folder
     model_path = args.model_path
-    predict_all(data_folder, model_path, args.device_id)
+    predict_all(data_folder, model_path, args.batch_size, args.device_id)
 
 
 if __name__ == "__main__":
