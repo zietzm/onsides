@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 def predict_all(
     data_folder: pathlib.Path,
     model_path: pathlib.Path,
+    device_id: int | None = None,
 ) -> None:
     logger.info("Loading exact matches...")
     exact_terms_path = (
@@ -40,6 +41,7 @@ def predict_all(
         weights_path=ar_model,
         text_settings=text_settings,
         batch_size=None,
+        device_id=device_id,
     )
 
     logger.info("Saving outputs...")
@@ -70,10 +72,16 @@ def main():
         required=True,
         help="Path to the where the model is housed.",
     )
+    parser.add_argument(
+        "--device_id",
+        type=int,
+        default=None,
+        help="The device ID to use. If None, will use the first available.",
+    )
     args = parser.parse_args()
     data_folder = args.data_folder
     model_path = args.model_path
-    predict_all(data_folder, model_path)
+    predict_all(data_folder, model_path, args.device_id)
 
 
 if __name__ == "__main__":

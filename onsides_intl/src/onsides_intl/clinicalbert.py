@@ -35,10 +35,14 @@ def evaluate(
     texts: list[str],
     max_length: int,
     batch_size: int,
+    device_id: int | None = None,
 ) -> list[float]:
     model.eval()
     if torch.cuda.is_available():
-        device = torch.device("cuda")
+        if device_id is None:
+            device = torch.device("cuda")
+        else:
+            device = torch.device(f"cuda:{device_id}")
         model = model.cuda()
     else:
         device = torch.device("cpu")

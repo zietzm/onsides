@@ -21,6 +21,7 @@ def predict(
     weights_path: Path,
     text_settings: TextSettings | None = None,
     batch_size: int | None = None,
+    device_id: int | None = None,
 ) -> list[float]:
     if text_settings is None:
         text_settings = TextSettings()
@@ -46,6 +47,7 @@ def predict(
         texts,
         max_length=train_settings.max_length,
         batch_size=batch_size,
+        device_id=device_id,
     )
     return outputs
 
