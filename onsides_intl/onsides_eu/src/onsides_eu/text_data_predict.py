@@ -20,6 +20,7 @@ def predict_all(
     )
     exact_matches_df = pd.read_csv(exact_terms_path)
     strings = [str(x) for x in exact_matches_df["string"].to_list()]
+    logger.info(f"Loaded {len(strings)} strings.")
 
     ar_model = (
         model_path / "bestepoch-bydrug-PMB_14-AR-125-all_222_24_25_2.5e-05_256_32.pth"
