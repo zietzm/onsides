@@ -9,6 +9,7 @@ class IndexedText(BaseModel):
 
 
 class MatchContext(BaseModel):
+    match_id: int
     text_id: int
     term_id: int
     term: str
@@ -30,6 +31,7 @@ def parse_texts(
     Find all term occurrences in a series of text strings, returning each match
     with the surrounding context for use with BERT.
     """
+    match_id = 0
     term_tree = _build_search_tree(terms)
     matches = list()
     texts_to_iter = tqdm.tqdm(texts) if progress else texts
@@ -37,6 +39,7 @@ def parse_texts(
         found_terms = _find_terms_in_text(text_obj.text, term_tree)
         for found_term in found_terms:
             match = MatchContext(
+                match_id=match_id,
                 text_id=text_obj.text_id,
                 term_id=found_term.term_id,
                 term=found_term.term,
@@ -48,6 +51,7 @@ def parse_texts(
                 ),
             )
             matches.append(match)
+            match_id += 1
     return matches
 
 
