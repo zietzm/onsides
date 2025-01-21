@@ -62,11 +62,10 @@ def evaluate(
             total_acc_test += acc
 
     print(f"Test Accuracy: {total_acc_test / len(texts): .4f}")
-    # TODO: Format the outputs properly
     npoutputs = [x.cpu().detach().numpy() for x in outputs]
     predictions = np.vstack(npoutputs)
     print(f"Predictions have shape: {predictions.shape}")
-    return predictions.ravel().tolist()
+    return predictions[:, 0].ravel().tolist()
 
 
 class Dataset(torch.utils.data.Dataset):
