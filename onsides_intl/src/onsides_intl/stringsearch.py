@@ -100,6 +100,12 @@ def _build_bert_string(
 ) -> str:
     """
     Extract surrounding context around a text match for use with BERT.
+
+    Args:
+        text: text from which to extract context
+        match: match that is being extracted
+        nwords: number of words in the output string
+        prop_before: proportion of nwords that come before the match
     """
     term_nwords = len(match.term.split())
     n_words_before = prop_before * (nwords - 2 * term_nwords)
@@ -107,7 +113,7 @@ def _build_bert_string(
     n_words_before = max(int(n_words_before), 1)
     n_words_after = max(int(n_words_after), 1)
     before_words = text[: match.start].split()[-n_words_before:]
-    after_words = text[match.end :].split()[:n_words_after]
+    after_words = text[match.end + 1 :].split()[:n_words_after]
     words_list = [match.term] + before_words + ["EVENT"] + after_words
     result = " ".join(words_list)
     return result
