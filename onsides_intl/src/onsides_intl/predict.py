@@ -6,6 +6,7 @@ import torch
 from pydantic import BaseModel
 
 from onsides_intl.clinicalbert import ClinicalBertClassifier, evaluate
+from onsides_intl.stringsearch import IndexedText
 
 logger = logging.getLogger(__name__)
 
@@ -24,14 +25,19 @@ class TextSettings(BaseModel):
     section: str = "AR"
 
 
+class TextPrediction(BaseModel):
+    text_id: int
+    prediction: float
+
+
 def predict(
-    texts: list[str],
+    texts: list[IndexedText],
     network_path: Path,
     weights_path: Path,
     text_settings: TextSettings | None = None,
     batch_size: int | None = None,
     device_id: int | None = None,
-) -> np.ndarray:
+) -> list[TextPrediction]:
     """Predict the labels for a list of texts.
 
     Args:
@@ -43,7 +49,7 @@ def predict(
         device_id: device ID to use for prediction. "cpu", "cuda:0", etc.
 
     Returns:
-        np.ndarray: The predicted labels (two columns)
+        list[TextPrediction]: prediction values for each text
     """
     if text_settings is None:
         text_settings = TextSettings()
@@ -63,14 +69,20 @@ def predict(
     model.load_state_dict(state_dict)
 
     logger.info("Evaluating text with the model...")
-    return evaluate(
+    strings = [x.text for x in texts]
+    predictions = evaluate(
         model,
         network_path,
-        texts,
+        strings,
         max_length=train_settings.max_length,
         batch_size=batch_size,
         device_id=device_id,
     )
+    assert len(texts) == len(predictions)
+    return [
+        TextPrediction(text_id=x.text_id, prediction=y[0])  # The first item ("Pred0")
+        for x, y in zip(texts, predictions)
+    ]
 
 
 class _TrainModelSettings(BaseModel):
