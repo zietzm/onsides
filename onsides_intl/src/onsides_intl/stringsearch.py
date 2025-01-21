@@ -3,11 +3,6 @@ from ahocorasick import Automaton
 from pydantic import BaseModel
 
 
-class SearchTerm(BaseModel):
-    term_id: int
-    term: str
-
-
 class IndexedText(BaseModel):
     text_id: int
     text: str
@@ -27,8 +22,8 @@ class ContextSettings(BaseModel):
 
 def parse_texts(
     texts: list[IndexedText],
-    terms: list[SearchTerm],
     context_settings: ContextSettings,
+    terms: list[IndexedText],
     progress: bool = False,
 ) -> list[MatchContext]:
     """
@@ -63,13 +58,13 @@ class _FoundTerm(BaseModel):
     end: int
 
 
-def _build_search_tree(terms: list[SearchTerm]) -> Automaton:
+def _build_search_tree(terms: list[IndexedText]) -> Automaton:
     """
     Builds an Aho-Corasick tree from a list of terms.
     """
     tree = Automaton(str, str)
     for obj in terms:
-        tree.add_word(obj.term, obj.model_dump_json())
+        tree.add_word(obj.text, obj.model_dump_json())
     tree.make_automaton()
     return tree
 
@@ -80,11 +75,11 @@ def _find_terms_in_text(text: str, term_tree: Automaton) -> list[_FoundTerm]:
     """
     found_terms = list()
     for end_index, obj_json in term_tree.iter(text):
-        obj = SearchTerm.model_validate_json(obj_json)
-        start_index = end_index - len(obj.term) + 1
+        obj = IndexedText.model_validate_json(obj_json)
+        start_index = end_index - len(obj.text) + 1
         obj = _FoundTerm(
-            term_id=obj.term_id,
-            term=obj.term,
+            term_id=obj.text_id,
+            term=obj.text,
             start=start_index,
             end=end_index,
         )
