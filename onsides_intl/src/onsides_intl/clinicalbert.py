@@ -49,9 +49,11 @@ def evaluate(
 
     logger.info(f"Using device {name}")
 
+    logger.info("Loading dataset...")
     dataset = Dataset(texts, tokenizer_path, max_length=max_length)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size)
 
+    logger.info("Evaluating text with the model...")
     outputs = list()
     with torch.no_grad():
         for test_input, test_label in tqdm.tqdm(dataloader):
@@ -71,16 +73,13 @@ class Dataset(torch.utils.data.Dataset):
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
 
         logger.info("Tokenizing texts...")
-        self.texts = [
-            self.tokenizer(
-                text,
-                padding="max_length",
-                max_length=max_length,
-                truncation=True,
-                return_tensors="pt",
-            )
-            for text in texts
-        ]
+        self.texts = self.tokenizer(
+            texts,
+            padding="max_length",
+            max_length=max_length,
+            truncation=True,
+            return_tensors="pt",
+        )
 
     def classes(self):
         return self.labels
@@ -89,10 +88,13 @@ class Dataset(torch.utils.data.Dataset):
         return len(self.labels)
 
     def get_batch_labels(self, idx):
-        return np.array(self.labels[idx])
+        return torch.tensor(self.labels[idx])
 
     def get_batch_texts(self, idx):
-        return self.texts[idx]
+        return {
+            "input_ids": self.texts["input_ids"][idx],
+            "attention_mask": self.texts["attention_mask"][idx],
+        }
 
     def __getitem__(self, idx):
         batch_texts = self.get_batch_texts(idx)
