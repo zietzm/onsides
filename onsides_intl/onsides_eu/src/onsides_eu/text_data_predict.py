@@ -1,19 +1,9 @@
 import argparse
 import logging
-import os
 import pathlib
-import sys
 
+import onsides_intl.predict
 import pandas as pd
-
-# HACK: would be nice if we could just `import onsides.predict`
-sys.path.insert(
-    0,
-    pathlib.Path(__file__)
-    .parent.parent.parent.parent.parent.joinpath("src")
-    .as_posix(),
-)
-import predict
 
 logger = logging.getLogger(__name__)
 
@@ -22,45 +12,44 @@ def predict_all(
     data_folder: pathlib.Path,
     model_path: pathlib.Path,
 ) -> None:
-    logger.info("Running the OnSIDES model")
+    logger.info("Loading exact matches...")
     exact_terms_path = (
         data_folder
         / "sentences-rx_method14_nwords125_clinical_bert_application_set_AR_v0924.csv"
     )
+    exact_matches_df = pd.read_csv(exact_terms_path)
+    strings = [str(x) for x in exact_matches_df["string"].to_list()]
+
     ar_model = (
         model_path / "bestepoch-bydrug-PMB_14-AR-125-all_222_24_25_2.5e-05_256_32.pth"
     )
     assert ar_model.exists()
 
-    # get absolute path - we want the onsides folder to find and call predict.py
-    onsides_intl_dir = pathlib.Path(os.getcwd())
-    assert onsides_intl_dir.stem == "onsides_intl"
-    onsides_dir = onsides_intl_dir.parent
-    script_path = onsides_dir / "src" / "predict.py"
-    assert script_path.exists()
+    network_path = (
+        model_path / "microsoft" / "BiomedNLP-PubMedBERT-base-uncased-abstract/"
+    )
+    assert network_path.exists()
 
-    predict.predict(
-        model_filepath=ar_model,
-        models_path=model_path,
-        examples_path=exact_terms_path,
+    text_settings = onsides_intl.predict.TextSettings(
+        nwords=125, refset=14, section="AR"
+    )
+    logger.info("Predicting labels...")
+    predictions = onsides_intl.predict.predict(
+        texts=strings,
+        network_path=network_path,
+        weights_path=ar_model,
+        text_settings=text_settings,
         batch_size=None,
     )
 
-    # build files using predicted labels
-    result_path = data_folder / (
-        "bestepoch-bydrug-PMB-sentences-rx_ref14-AR-125-all_222_24_25_2.5e-"
-        "05_256_32.csv.gz"
-    )
-    assert result_path.exists()
-
+    logger.info("Saving outputs...")
     # right now, we have it set up to simply run through the results and just
     # filter against the threshold used in the original OnSIDES output.
     threshold = 0.4633
-    result_df = pd.read_csv(result_path, header=None, names=["Pred0", "Pred1"])
-    exact_df = pd.read_csv(exact_terms_path)
-    df = pd.concat([exact_df, result_df], axis=1)
-    n_before = df.shape[0]
-    df = df[df.Pred0 > threshold]
+    df = exact_matches_df.assign(Pred0=predictions).loc[
+        lambda df: df["Pred0"] > threshold
+    ]
+    n_before = exact_matches_df.shape[0]
     n_after = df.shape[0]
     logger.info(f"Filtered from {n_before} to {n_after} rows.")
     df.to_csv(data_folder / "ade_text_table_onsides_pred.csv", index=False)
