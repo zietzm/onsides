@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 
+import numpy as np
 import torch
 from pydantic import BaseModel
 
@@ -22,7 +23,7 @@ def predict(
     text_settings: TextSettings | None = None,
     batch_size: int | None = None,
     device_id: int | None = None,
-) -> list[float]:
+) -> np.ndarray:
     if text_settings is None:
         text_settings = TextSettings()
 
@@ -41,7 +42,7 @@ def predict(
     model.load_state_dict(state_dict)
 
     logger.info("Evaluating text with the model...")
-    outputs = evaluate(
+    return evaluate(
         model,
         network_path,
         texts,
@@ -49,7 +50,6 @@ def predict(
         batch_size=batch_size,
         device_id=device_id,
     )
-    return outputs
 
 
 class TrainModelSettings(BaseModel):

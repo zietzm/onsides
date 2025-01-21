@@ -44,12 +44,13 @@ def predict_all(
         batch_size=None,
         device_id=device_id,
     )
+    predictions_df = pd.DataFrame(predictions, columns=pd.Index(["Pred0", "Pred1"]))
 
     logger.info("Saving outputs...")
     # right now, we have it set up to simply run through the results and just
     # filter against the threshold used in the original OnSIDES output.
     threshold = 0.4633
-    df = exact_matches_df.assign(Pred0=predictions).loc[
+    df = pd.concat([exact_matches_df, predictions_df], axis=1).loc[
         lambda df: df["Pred0"] > threshold
     ]
     n_before = exact_matches_df.shape[0]

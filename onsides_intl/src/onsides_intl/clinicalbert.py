@@ -36,7 +36,7 @@ def evaluate(
     max_length: int,
     batch_size: int,
     device_id: int | None = None,
-) -> list[float]:
+) -> np.ndarray:
     model.eval()
     if torch.cuda.is_available():
         name = "cuda" if device_id is None else f"cuda:{device_id}"
@@ -60,9 +60,7 @@ def evaluate(
             input_id = test_input["input_ids"].squeeze(1).to(device)
             output = model(input_id, mask)
             outputs.append(output.cpu().detach().numpy())
-
-    predictions = np.vstack(outputs)
-    return predictions[:, 0].ravel().tolist()
+    return np.vstack(outputs)
 
 
 class Dataset(torch.utils.data.Dataset):
