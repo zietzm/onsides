@@ -37,6 +37,8 @@ def evaluate(
     batch_size: int,
     device_id: int | None = None,
 ) -> np.ndarray:
+    """Evaluate the model on a list of texts."""
+
     model.eval()
     if torch.cuda.is_available():
         name = "cuda" if device_id is None else f"cuda:{device_id}"

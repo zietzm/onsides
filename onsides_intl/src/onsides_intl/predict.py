@@ -11,9 +11,17 @@ logger = logging.getLogger(__name__)
 
 
 class TextSettings(BaseModel):
+    """
+    Settings for the text data.
+
+    This is a legacy compatibility thing, and doesn't necessarily need to be
+    used if you are just evaluating the model. It is used to check that the
+    text data are formatted the same way as the model's training data.
+    """
+
     nwords: int = 125
-    refset: int = 14  # TODO: Unsure what this is
-    section: str = "AR"  # TODO: This isn't necessary here
+    refset: int = 14
+    section: str = "AR"
 
 
 def predict(
@@ -24,11 +32,24 @@ def predict(
     batch_size: int | None = None,
     device_id: int | None = None,
 ) -> np.ndarray:
+    """Predict the labels for a list of texts.
+
+    Args:
+        texts: formatted context texts (e.g. "headache this drug caused EVENT")
+        network_path: path to the model specification
+        weights_path: path to the model weights
+        text_settings: settings for the text data (number of words, etc.)
+        batch_size: batch size for prediction. Defaults to 2x train batch size
+        device_id: device ID to use for prediction. "cpu", "cuda:0", etc.
+
+    Returns:
+        np.ndarray: The predicted labels (two columns)
+    """
     if text_settings is None:
         text_settings = TextSettings()
 
-    train_settings = TrainModelSettings.from_filename(weights_path)
-    validate_settings(train_settings, text_settings)
+    train_settings = _TrainModelSettings.from_filename(weights_path)
+    _validate_settings(train_settings, text_settings)
 
     if batch_size is None:
         batch_size = train_settings.batch_size * 2
@@ -52,7 +73,7 @@ def predict(
     )
 
 
-class TrainModelSettings(BaseModel):
+class _TrainModelSettings(BaseModel):
     prefix: str
     network: str
     refset: int
@@ -67,7 +88,7 @@ class TrainModelSettings(BaseModel):
     batch_size: int
 
     @classmethod
-    def from_filename(cls, model_filepath: Path) -> "TrainModelSettings":
+    def from_filename(cls, model_filepath: Path) -> "_TrainModelSettings":
         splits = model_filepath.stem.split("_")
         if len(splits) != 8:
             raise Exception(
@@ -114,7 +135,7 @@ class TrainModelSettings(BaseModel):
         )
 
 
-class ExampleDataSettings(BaseModel):
+class _ExampleDataSettings(BaseModel):
     filename: str
     refset: int
     nwords: int
@@ -125,7 +146,7 @@ class ExampleDataSettings(BaseModel):
     _path: Path
 
     @classmethod
-    def from_filename(cls, examples_path: Path) -> "ExampleDataSettings":
+    def from_filename(cls, examples_path: Path) -> "_ExampleDataSettings":
         splits = examples_path.stem.split("_")
         if len(splits) < 8:
             raise ValueError("Expected 8 splits, got {len(splits)}")
@@ -161,9 +182,9 @@ class ExampleDataSettings(BaseModel):
         )
 
 
-def validate_settings(
-    model_settings: TrainModelSettings,
-    text_settings: TextSettings | ExampleDataSettings,
+def _validate_settings(
+    model_settings: _TrainModelSettings,
+    text_settings: TextSettings | _ExampleDataSettings,
 ) -> None:
     if text_settings.nwords != model_settings.refnwords:
         raise ValueError(
@@ -185,10 +206,14 @@ def validate_settings(
         )
 
 
-def build_results_path(
-    model_settings: TrainModelSettings,
-    example_settings: ExampleDataSettings,
+def _build_results_path(
+    model_settings: _TrainModelSettings,
+    example_settings: _ExampleDataSettings,
 ) -> Path:
+    """
+    Build the path to the results file for a given model and example data.
+    This is the legacy file naming convention.
+    """
     filename = (
         f"{model_settings.prefix}-{example_settings.prefix}{example_settings.split_no}_"
         f"ref{model_settings.refset}-{model_settings.refsection}-"
