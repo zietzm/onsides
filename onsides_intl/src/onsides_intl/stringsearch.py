@@ -23,14 +23,17 @@ class ContextSettings(BaseModel):
 
 def parse_texts(
     texts: list[IndexedText],
-    context_settings: ContextSettings,
     terms: list[IndexedText],
+    context_settings: ContextSettings | None = None,
     progress: bool = False,
 ) -> list[MatchContext]:
     """
     Find all term occurrences in a series of text strings, returning each match
     with the surrounding context for use with BERT.
     """
+    if context_settings is None:
+        context_settings = ContextSettings()
+
     match_id = 0
     term_tree = _build_search_tree(terms)
     matches = list()
