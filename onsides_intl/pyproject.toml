@@ -19,6 +19,10 @@ dependencies = [
   "transformers>=4.46.3",
   "wget>=3.2",
   "pandas>=2.2.3",
+  "pyarrow>=18.1.0",
+  "openpyxl>=3.1.5",
+  "arrow-odbc>=8.0.7",
+  "psycopg2>=2.9.10",
 ]
 
 [tool.uv.sources]
@@ -26,3 +30,10 @@ onsides_eu = { workspace = true }
 
 [tool.uv.workspace]
 members = ["onsides_eu"]
+
+[dependency-groups]
+dev = [
+    "jupyterlab-vim>=4.1.4",
+    "jupyterlab>=4.3.4",
+    "pytest>=8.3.4",
+]
