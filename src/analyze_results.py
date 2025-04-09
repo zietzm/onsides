@@ -3,6 +3,7 @@ import os
 import sys
 
 import numpy as np
+import pandas as pd
 import torch
 
 sys.path.append(os.path.abspath("./src"))
@@ -113,6 +114,13 @@ if __name__ == "__main__":
     predictions = np.vstack(npoutputs)
 
     np.savetxt(valid_filename, predictions, delimiter=",")
+    assert df_val.shape[0] == predictions.shape[0], (
+        "Validation predictions not the expected shape"
+    )
+    valid_df_filename = (
+        f"{args.base_dir}/results/{prefix}-valid_{file_parameters}-full.csv"
+    )
+    df_val.to_csv(valid_df_filename, index=False)
 
     if not args.skip_train:
         train_filename = f"{args.base_dir}/results/{prefix}-train_{file_parameters}.csv"
