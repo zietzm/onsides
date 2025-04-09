@@ -191,10 +191,12 @@ def train(model, train_data, val_data, learning_rate, epochs, max_length, batch_
         epoch_times.append(time.time()-epoch_start_time)
         epoch_saved.append(saved_model)
 
-        print(f'Epochs: {epoch_num + 1} | Train Loss: {total_loss_train / len(train_data): .4f} \
+        print(
+            f"Epochs: {epoch_num + 1} | Train Loss: {total_loss_train / len(train_data): .4f} \
                 | Train Accuracy: {total_acc_train / len(train_data): .4f} \
                 | Val Loss: {total_loss_val / len(val_data): .4f} \
-                | Val Accuracy: {total_acc_val / len(val_data): .4f}')
+                | Val Accuracy: {total_acc_val / len(val_data): .4f}"
+        )
 
         print(f"It's been {epochs_since_best} since the best performing epoch. Will break if this hits 4.")
         if epochs_since_best >= 4:
