@@ -77,7 +77,9 @@ if __name__ == "__main__":
     # load pre-trained network
     cb.Dataset.set_tokenizer(network_path)
     model = cb.ClinicalBertClassifier(network_path)
-    model.load_state_dict(torch.load(model_filepath))
+    state = torch.load(model_filepath)
+    state.pop("bert.embeddings.position_ids")
+    model.load_state_dict(state)
 
     # loading and re-splitting the data
     datapath = f"./data/refs/ref{refset}_nwords{refnwords}_clinical_bert_reference_set_{refsection}.txt"
